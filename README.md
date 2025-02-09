@@ -43,6 +43,7 @@ brew install gcc
 ```bash
 # Compilação básica
 gcc jogo_da_velha.c -o jogo_da_velha
+```
 
 ## Como Jogar - Guia Detalhado
 
