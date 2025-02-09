@@ -1,9 +1,16 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <ctype.h>
+
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define CYAN "\033[36m"
 
 void show_start_screen() 
 {
-    printf("\n");
+    printf(CYAN "\n");
     printf("*********************************\n");
     printf("*       JOGO DA VELHA           *\n");
     printf("*********************************\n");
@@ -14,7 +21,7 @@ void show_start_screen()
     printf("* 2. Informe a posicao (1-9).   *\n");
     printf("*                               *\n");
     printf("* Boa sorte e divirta-se!       *\n");
-    printf("*********************************\n");
+    printf("*********************************\n" RESET);
     printf("\nPressione ENTER para continuar...");
     getchar();  
 }
@@ -38,17 +45,17 @@ void initialize_board(char board[3][3])
 void print_board(char board[3][3])
 {
     printf("\n");
-    for(int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++) 
     {
-        for(int j = 0; j < 3; j++)
+        for (int j = 0; j < 3; j++) 
         {
-            printf(" %c", board[i][j]);
-            if (j < 2) printf("|");
+            printf(" %c ", board[i][j]);  
+            if (j < 2) printf("|");       
         }
         printf("\n");
-        if(i < 2) printf("---+---+---\n");
+        if (i < 2) printf("---+---+---\n");  
     }
-    printf("\n");
+    
 }
 
 bool check_win(char board[3][3])
@@ -77,33 +84,17 @@ bool check_win(char board[3][3])
 
 bool check_tie(char board[3][3])
 {
-    bool flag;
-
     for(int i = 0; i < 3; i++) 
     {
         for(int j = 0; j < 3; j++)
         {
             if(board[i][j] == ' ')
             {
-                flag = false;
-                return flag;
-                break;
-            }
-            else 
-            {
-                flag = true;
+                return false;
             }
         }
     }
-    return flag;
-}
-
-bool check_valid_position(char board[3][3], int row, int column)
-{
-    if(board[row][column] != ' ')
-    {
-        return false;
-    }
+    printf(YELLOW "\nDeu velha!\n" RESET);
     return true;
 }
 
@@ -180,6 +171,21 @@ void check_winner(char board[3][3], int *x_counter, int *o_counter)
     }
 }
 
+bool check_valid_position(char board[3][3], int row, int column, int position)
+{
+    if(board[row][column] != ' ')
+    {
+        return false;
+    }
+
+    if (position < 1 || position > 9) 
+    {
+        return false;
+    }
+
+    return true;
+}
+
 void convert_position(int n, int *row, int *column)
 {
     n--;
@@ -192,8 +198,8 @@ void game(char board[3][3], char player, int *x_counter, int *o_counter)
     bool is_game_finished = false;
     int position, row, column;
 
-    printf("----Placar----\n");
-    printf("X: %d O: %d", *x_counter, *o_counter);
+    printf(GREEN "----Placar----\n" RESET);
+    printf(GREEN "X: %d     O: %d" RESET, *x_counter, *o_counter);
 
     while(!is_game_finished)
     {
@@ -204,9 +210,9 @@ void game(char board[3][3], char player, int *x_counter, int *o_counter)
         scanf("%d", &position);
         convert_position(position, &row, &column);
 
-        if(!check_valid_position(board, row, column))
+        if(!check_valid_position(board, row, column, position))
         {
-            printf("\nPosicao ja ocupada! Escolha outra posicao\n");
+            printf(RED "\nPosicao invalida! Escolha outra posicao!\n" RESET);
             continue;
         }
 
@@ -218,8 +224,7 @@ void game(char board[3][3], char player, int *x_counter, int *o_counter)
 
     print_board(board);
 
-
-    if(check_win(board))
+    if (check_win(board))
     {
         check_winner(board, x_counter, o_counter);
     }
@@ -234,21 +239,28 @@ int main()
 
     while(continue_play)
     {
-        char current_player;
-        printf("Escolha entre X ou O (use CAPS LOCK): ");
-        scanf(" %c", &current_player);
+        char player;
+        printf("Escolha entre X ou O: ");
+        scanf(" %c", &player);
+        player = toupper(player);
+        if(player != 'X' && player != 'O')
+        {
+            printf(RED "Escolha invalida! Escolha entre X ou O.\n" RESET);
+            continue;
+        }
 
         char board[3][3];
         initialize_board(board);
 
-        game(board, current_player, &x_counter, &o_counter);
+        game(board, player, &x_counter, &o_counter);
 
         char play_again;
         printf("Deseja jogar novamente? (s/n): ");
         scanf(" %c", &play_again);
 
-        if (play_again == 'n' || play_again == 'N') {
+        if (tolower(play_again) != 's') {
             continue_play = false;
+            printf(CYAN "\nObrigado por jogar! Placar final -> X: %d | O: %d\n" RESET, x_counter, o_counter);
         }
     }
     
